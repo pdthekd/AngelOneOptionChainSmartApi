@@ -55,11 +55,9 @@ def get_data_using_socket(
     def on_error(wsapp, error):
         print(f"ERROR - {error}")
         sws.resubscribe()
-    
-    def on_close(wsapp, close_status_code, close_msg):
-        print(f"🔌 Socket closed with code: {close_status_code}, reason: {close_msg}")
 
-
+    def on_close(wsapp):
+        print("Close")
 
     CORRELATION_ID = "123_qwerty"  # dummy actually
     MODE = 3  # Means it is Snap Quote mode
@@ -110,20 +108,22 @@ def start_app(usr: User, api_key: str, options_map: list):
 def main():
     stng = InitSettings(f"{OUR_PATH}\\settings.txt")
 
-    usr = User(
-        api_key=stng.API_KEY,
-        client_code=stng.ID,
-        mpin=stng.PASSWORD,
-        otp_secret=stng.OTP_CODE
-    )
-
-    if not usr.login():
-        raise Exception("❌ Login to SmartAPI failed.")
-
+    usr = User(stng.ID, stng.PASSWORD, stng.OTP_CODE)
     app = App(
         usr=usr,
         api_key=stng.API_KEY
     )
+
+    JWT = ""
+    FEED = ""
+    smart_api_response = app.start_session()
+    if smart_api_response["status"] == "error":
+        raise Exception("Can`t start the session with SmartApi")
+    else:
+        JWT = smart_api_response["additionalData"]["JWT"]
+        usr.jwt = JWT
+        FEED = smart_api_response["additionalData"]["FEED"]
+        usr.feed = FEED
 
     app.download_and_update_instrument_list()
     options_map = app.get_options_map()

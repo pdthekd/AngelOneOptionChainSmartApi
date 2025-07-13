@@ -19,11 +19,10 @@ class App:
             while attempts > 0:
                 attempts = attempts - 1
                 data = self.__smart.generateSession(
-                self.__user.client_code,
-                self.__user.mpin,
-                self.__user.totp
+                    self.__user.usr_id,
+                    self.__user.password,
+                    self.__user.totp
                 )
-
 
                 if data['status']:
                     __JWT_TOKEN = data['data']['jwtToken']

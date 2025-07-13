@@ -22,7 +22,7 @@ class SmartWebSocketV2(object):
     SmartAPI Web Socket version 2
     """
 
-    ROOT_URI = "ws://smartapisocket.angelone.in/smart-stream"
+    ROOT_URI = "wss://smartapisocket.angelone.in/smart-stream"
     HEART_BEAT_MESSAGE = "ping"
     HEAR_BEAT_INTERVAL = 30
     LITTLE_ENDIAN_BYTE_ORDER = "<"
@@ -310,10 +310,16 @@ class SmartWebSocketV2(object):
             self.current_retry_attempt += 1
             self.connect()
 
-    def _on_close(self, wsapp):
-        # self.HB_THREAD_FLAG = False
-        # print(self.wsapp.close_frame)
-        self.on_close(wsapp)
+    # def _on_close(self, wsapp, close_status_code, close_msg):
+        # #self.HB_THREAD_FLAG = False
+        # #print(self.wsapp.close_frame)
+        # self.on_close(wsapp, close_status_code, close_msg)
+    def _on_close(self, wsapp, close_status_code, close_msg):
+        try:
+            self.on_close(wsapp, close_status_code, close_msg)
+        except Exception as e:
+            print(f"ERROR - on_close() handler crashed: {e}")
+
 
     def _parse_binary_data(self, binary_data):
         try:

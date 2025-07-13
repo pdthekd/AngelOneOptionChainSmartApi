@@ -1,49 +1,67 @@
-
 import pyotp
-
+from SmartApi.smartConnect import SmartConnect
+from typing import Optional
 
 class User:
-    def __init__(self, id, passw, otp_code) -> None:
-        self.__ID = id
-        self.__PASSWORD = passw
-        self.__OTP_CODE = otp_code
+    def __init__(self, api_key: str, client_code: str, mpin: str, otp_secret: str) -> None:
+        self.__API_KEY = api_key
+        self.__ID = client_code
+        self.__MPIN = mpin
+        self.__OTP_SECRET = otp_secret
 
         self.__JWT = None
         self.__FEED = None
+        self.__session = None
+        self.__obj = SmartConnect(api_key=api_key)
 
     """
-    Getters:
+    Getters
     """
-
     @property
-    def usr_id(self) -> str:
+    def client_code(self) -> str:
         return self.__ID
 
     @property
-    def password(self) -> str:
-        return self.__PASSWORD
+    def mpin(self) -> str:
+        return self.__MPIN
 
     @property
     def totp(self) -> str:
-        totp = pyotp.TOTP(s=self.__OTP_CODE)
-        return totp.now()
+        return pyotp.TOTP(self.__OTP_SECRET).now()
 
     @property
-    def jwt(self) -> str | None:
+    def jwt(self) -> Optional[str]:
         return self.__JWT
 
     @property
-    def feed(self) -> str | None:
+    def feed(self) -> Optional[str]:
         return self.__FEED
 
-    """
-    Setters:
-    """
+    @property
+    def session(self) -> Optional[dict]:
+        return self.__session
 
-    @jwt.setter
-    def jwt(self, jwt: str) -> None:
-        self.__JWT = jwt
+    @property
+    def connection(self):
+        return self.__obj
 
-    @feed.setter
-    def feed(self, feed: str) -> None:
-        self.__FEED = feed
+    """
+    Methods
+    """
+    def login(self) -> bool:
+        try:
+            self.__session = self.__obj.generateSession(self.__ID, self.__MPIN, self.totp)
+            self.__JWT = self.__session["data"]["jwtToken"]
+            self.__FEED = self.__session["data"]["feedToken"]
+            print("✅ Login successful.")
+            return True
+        except Exception as e:
+            print("❌ Login failed:", e)
+            return False
+
+    def logout(self):
+        try:
+            self.__obj.terminateSession(self.__ID)
+            print("👋 Logged out.")
+        except Exception as e:
+            print("⚠️ Logout failed:", e)
