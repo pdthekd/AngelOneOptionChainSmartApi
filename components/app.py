@@ -46,14 +46,28 @@ class App:
         self.__instrument_list = requests.get(
             self.__url_for_instruments).json()
 
-    def get_options_map(self, exch_type="NFO", opt_type="OPTIDX") -> list:
+    # def get_options_map(self, exch_type="NFO", opt_type="OPTIDX") -> list:
+        # instrument_list = self.__instrument_list
+        # options_map = []
+
+        # for instrument in instrument_list:
+            # st1 = (instrument['exch_seg'] == exch_type)
+            # st2 = (instrument['instrumenttype'] == opt_type)
+            # if st1 and st2:
+                # options_map.append(instrument)
+
+        # return options_map
+        
+    def get_options_map(self, exch_type="NFO", opt_type="OPTIDX", name_filter="NIFTY") -> list:
         instrument_list = self.__instrument_list
         options_map = []
 
         for instrument in instrument_list:
             st1 = (instrument['exch_seg'] == exch_type)
             st2 = (instrument['instrumenttype'] == opt_type)
-            if st1 and st2:
+            st3 = (instrument['name'] == name_filter)  # ← Add this
+            if st1 and st2 and st3:
                 options_map.append(instrument)
 
         return options_map
+
